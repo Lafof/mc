@@ -1,11 +1,13 @@
+require('dotenv').config() // Lädt die Variablen aus .env
 const mineflayer = require('mineflayer')
+const express = require('express')
 
 // === CONFIGURATION ===
 const bot = mineflayer.createBot({
-  host: 'donutsmp.net', // <-- Replace with the server IP
-  port: 25565,              // Default port for most Java servers
-  username: 'wwwebraheem0@gmail.com', // Or your username if using an offline-mode server
-  auth: 'microsoft'         // Use 'microsoft' for modern Minecraft accounts
+  host: process.env.SERVER_HOST,        // aus .env
+  port: parseInt(process.env.SERVER_PORT),
+  username: process.env.BOT_EMAIL,      // aus .env
+  auth: process.env.AUTH_MODE           // 'microsoft' oder 'offline'
 })
 
 // === EVENTS ===
@@ -15,3 +17,14 @@ bot.on('end', () => {
   setTimeout(() => bot.connect(), 5000)
 })
 bot.on('error', err => console.log('⚠️ Error:', err))
+
+// === EXPRESS WEB SERVER (für Railway/24/7) ===
+const app = express()
+app.get('/', (req, res) => res.send('Bot is alive!'))
+app.listen(process.env.PORT || 3000, () => console.log('✅ Webserver running'))
+
+// === OPTIONAL: ANTI-AFK (BOT JUMP EVERY 60 SEKUNDEN) ===
+setInterval(() => {
+  bot.setControlState('jump', true)
+  setTimeout(() => bot.setControlState('jump', false), 500)
+}, 60000)
